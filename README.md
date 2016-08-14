@@ -3,7 +3,7 @@ A simple Ethereum dapp that helps people keep their commitments to attending a m
 
   1.	A smart contract intended to incentivize on-time attendance at a meeting.
 
-  2.	Each attendee sends some ether to the contract (the kitty).
+  2.	Each attendee sends some ether to the contract prior to the meeting date.
 
   3.	Five minutes (gracePeriod) after start of the meeting, coordinator randomly chooses a positive integer less than 64 (‘n’). This is done publically in front of those present. Anyone present may then call a function to note ‘n’.
 
