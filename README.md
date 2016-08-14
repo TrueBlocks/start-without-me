@@ -1,5 +1,5 @@
 # Start-Without-Me
-A simple dapp that helps people keep their commitments to attending a meeting on time.
+A simple Ethereum dapp that helps people keep their commitments to attending a meeting on time.
 
   1.	A smart contract intended to incentivize on-time attendance at a meeting.
 
