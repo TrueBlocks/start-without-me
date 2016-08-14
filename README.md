@@ -1,54 +1,33 @@
 # Start-Without-Me
-A simple Ethereum dapp that helps people keep their commitments to attending a meeting on time.
+A simple Ethereum dapp that helps people keep their commitments to attending a meeting on time. The contract is called ‘Start Without Me.’ If you’re always on time, you will like it. If you're usually late, it might incentivize you to fix your bad habit.
 
   1.	A smart contract intended to incentivize on-time attendance at a meeting.
 
   2.	Each attendee sends some ether to the contract prior to the meeting date.
 
-  3.	Five minutes (gracePeriod) after start of the meeting, coordinator randomly chooses a positive integer less than 64 (‘n’). This is done publically in front of those present. Anyone present may then call a function to note ‘n’.
+  3.	Five minutes (*gracePeriod*) after start of the meeting, coordinator randomly chooses a positive integer, **n**, less than 64. This is done publically in front of those present. The coordinator then calls a function that notes ‘n’.
 
-  4.	Each person then present has five minutes (presentPeriod) and one chance (tries) to reclaim their ether by calling a different function with the n'th character of their Ethereum address. If they send the right character, the contract returns their ether.
+  4.	Each person then present has five minutes (*presentPeriod*) and one chance (*tries*) to reclaim their ether by calling a different function sending the n'th character of their Ethereum address to the contract. If they send the right character, the contract returns their ether.
 
-  5.	If they do not send the right character (either by not being present, by sending the character too late, or by sending the wrong character), they forfeit their ether.
+  5.	If they do not send the right character (either by not being present, by sending the character too late, or by sending the wrong character more than *tries* times), they forfeit their ether.
 
-  6.	After 'gracePeriod' plus 'presentPeriod' minutes, attendance is closed, and any ether remaining in the kitty is distributed evenly among those present. (In sum: if you’re late or not present, you lose your money).
+  6.	After *gracePeriod* plus *presentPeriod* minutes, attendance is closed, and any ether remaining in the contract is distributed evenly among those present. (In sum: if you’re late or you don't show up, you lose your deposit).
 
-  7.	The cost of refreshments for the meeting is split among those present.
+  7.	The cost of refreshments for the meeting is split among those present as it would normally be with those present possibly benefiting from those who fail to show up.
 
-The contract is called ‘Start Without Me.’ If you’re always on time, you will like it. If you're usually late, it might incentivize you to fix your bad habit.
+##Why the Idea is Interesting:
 
-##Why is it Interesting:
-
-  1.	An important aspect of this idea is to incorporate ‘being present’ as part of the operation of a smart contract. Participant's precence is 'real-world' data. In that sense, this data is an oracle. The project models a method to incorporate real world data into the operation of a smart contract. Barring people calling their friends with the value of 'n', only those present will be able to retreive their ether.
-
-  2.	This incentivizes action in the real world with a smart contract.
-
-  3.	For those attendees to the meeting that don't participate (i.e. don't send ether), they end up spending potentially more on their food than those that make a commitment of being on time (as long as there are people who are late). If no one is late, then no one is late, which is the purpose of the contract
-	
+  1.	An important aspect of this idea is to incorporate ‘being present’ as part of the operation of a smart contract. Participants' precence or absence is 'real-world' data. In that sense, the contract is using an oracle. The contract tries to make the point that all oracles need not be some sort of software code. 'Real-world' data can come from 'real-world' people acting together.
   
-
-
-StartWithoutMe(timeStamp, place, deposit)
-
-  The constructor allows for the start time and date of the meeting. It takes four additional parameters: (1) 'amount' the deposit amount (default 1) expected to play, (2) 'gracePeriod' (default five mins) the amount of time after the start of the meeting before the random digit is drawn; (3) 'confirmPeriod' (default five mins) the amount of time after the dice is rolled before the 'round' closes; and (4) 'tries' (default 1) the number of tries a user has to call the confirm function before failure.
-
-, gracePeriod, confirmPeriod, tries
-
-function i_wont_be_late()
-
-  A user's calls this function to promise that they will attend the meeting and not be late. If msg.value != 'amount' the function throws. Subsequent calls to this function (after acceptance) will throw and return any sent ether. This function stops working at 'start_time'.
-
-function random_character(int n)
-
+  2.	For those attendees to the meeting that do not participate (i.e. don't send ether) there is no downside, other than they may end up spending more on their refreshments than those that make a commitment of being on time (as long as there are people who are late).
   
-IAmComing which throws unless it gets send.value == 1 ether
+  3.	If no one is late, then the real purpose of this contract has been met.
 
-	RandomCharacter takes a number, ’n' between 0 and 63 which sets the random character checker. This  is called by the curator not earlier than ten minutes and not later than fifteen minutes after the supposed start of the meeting (it throws if he/she tries to enter it outside of this range).
+##Outstanding Issues
+  1.	The contract may actually dis-incentivize people from attending the meeting. For these people, however, they can simply choose to not particpate. Using the contract for a meeting does not mean that someone must commit to coming. It's just that if they do commit, they might benefit from those who commit and fail to come on time.
 
-	IAmHere which takes a single character addr[n] (that is, the nth character in the sender’s address. This must be called within ten minutes of the curator setting the character. If the nth character of the sender’s address is correctly sent in, the user can get their money back.
+  2.	There does not seem to be any way to protect someone from calling his/her friend and telling them the value of 'n' other than they would have to sneak off into a corner to do so. The group should watch for people who sneak off into the corner after the value of **n** is decided.
 
-	GetMyShare which takes no parameters, and simply sends the sender’s original ether plus his/her portion of the ethers from those who were late or did not show up.
+##Contributing
 
-	SendAllEthere which is called by the curator to close out the game and pay everyone back.
-
-It’s not well thought out, but it seems like it might work. Let me know what you think. I think it would be fun to try to develop this together as a group. I’ll wait until I hear from you and then we can make a GitHub repository.
+Please help us in any way you can. If you use the contract, let us know. We are open to any and all constructive criticism.
