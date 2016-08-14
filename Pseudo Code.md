@@ -2,30 +2,32 @@
 
 This document spells out the basic workings of the smart contract. We are working on the code and will release it as soon as it is ready. In the meantime, please enjoy this pseduo-code. If you see any glaring holes, problems, or opportunities for improvement, please let us know.
 
-##constructor StartWithoutMe(startTime, place, deposit)
+##constructor StartWithoutMe(startTime, place, deposit, gracePeriods, tries)
 
-  The constructor specifies the *startTime* and the *place* of the meeting along with a *deposit*. *deposit* is intended to serve as a promise from the participant that they will be on time. Various default values are chosen for other settings such as *gracePeriod* (5 minutes), *presentPeriod* (5 minutes), and *tries* (1). Only the meeting's coordinator (the **msg.sender** to the constructor) may alter these other settings. *startTime*, *place*, and *deposit* may not be altered. If a meeting's time or place is changed, the coordinator calls *cancleMeeting* which causes all accumulated ether to be returned to attendees.
+  The constructor specifies the *startTime* and the *place* of the meeting along with a *deposit*. The *deposit* serves as a promise from the participant that they will be on time. The remaining parameters (*gracePeriod* and *tries*) allow finer control of how the contract operates. The **msg.sender** to the constructor becomes the coordinator for the meeting.
+  
+  If a meeting is cancled or its time or place need to be changed, the coordinator calls *cancleMeeting* which refunds each attendee's ether and kills the contract. A new meeting can be initiated if desired. A later version of this code may allow for a meeting to be rescheduled, but this opens the possiblity of an unscrupulous meeting coordinator absconding with the funds by changing the time and place unbeknownst to the other attendees, therefore, once instantiated, a meeting cannot be altered.
 
 ##function i_promise_to_be_on_time()
 
-  Each user calls this function to promise that they will attend the meeting and not be late. If msg.value != 'deposit' the function throws. Subsequent calls to this function (after it has been sucessfully called) will throw thereby returning incorrectly sent ether to the caller. This is intended to protect the user from promising twice, for example. This function will throw if it is called after the scheduled start of the meeting (that is, after *startTime*). The function records the user's ether mapped to his/her account.
+  Each user calls this function to promise that they will attend the meeting on time (within the *gracePeriod*. If msg.value != 'deposit' the function throws.
+  
+  Subsequent calls to this function (after it has been sucessfully called) will throw thereby insuring that an attendee does not promise twice. This function will throw if it is called after the scheduled start of the meeting (that is, after *startTime*). The function records the user's ether mapped to his/her account.
+  
+  Note that there is no way for a user to promise to come to a meeting and then later back out. This is a possible place for improvement.
 
 ##function random_character(int n)
 
-  Any time after the *gracePeriod* the coordinator calls this function with a character that has been chosen by those present at the meeting. Any method may be used to choose **n**. For example, a 64-sided dice or two 8-sided dice may be rolled. Once *n* is chosen, the coordinator calls this function to inform the smart contract of the expected character each user will send in order to reclaim their deposit.
+  After *startTime* plus *gracePeriod* the coordinator calls this function with a character that has been chosen by those present at the meeting. Those present may use any method to choose **n**. For example, a 64-sided dice or two 8-sided dice may be rolled. *n* must be between '0' and '63' inclusive. Once *n* is chosen, the coordinator calls this function to inform the smart contract of the expected character each user will be sending in order to reclaim their deposit. Note that only those present will know the value of *n*. Only the coordinator may call this function.
 
-IAmComing which throws unless it gets send.value == 1 ether
+##function i_am_here(string char)
 
-	RandomCharacter takes a number, ’n' between 0 and 63 which sets the random character checker. This  is called by the curator not earlier than ten minutes and not later than fifteen minutes after the supposed start of the meeting (it throws if he/she tries to enter it outside of this range).
+  Called by any participant and sent with '0' ether, the caller should send the *n*th character in his/her Ethereum account's address. If the wrong character is sent, the function throws. If the function is called by an account and fails more than *tries* times, the ether is forfeit. If the function is called later than startTime + (2 * gracePeriod) the caller's deposit is forfeit. (The first *gracePeriod* is used to decide on *n*, the second *gracePeriod* is for users to reclaim their ether.) For example, if *n* is three (3) then an Ethereum address '0xabcdefg...' would send the letter 'c' to this function. Upon sucessful completion, this function returns the caller's *deposit*.
+  
+##function closeAttendance()
 
-	IAmHere which takes a single character addr[n] (that is, the nth character in the sender’s address. This must be called within ten minutes of the curator setting the character. If the nth character of the sender’s address is correctly sent in, the user can get their money back.
+  This function, called only by the coordinator, closes out the attendance portion of the meeting. This function may only be called after *startTime* + (2 * *gracePeriod*). It closes out the meeting's attendance and splits the remaining ether among those who sucessfully called **i_am_here**. Upon sucessful completion, the function calls 'kill' to remove the code from the blockchain.
+  
+##function getMyDeposit()
 
-	GetMyShare which takes no parameters, and simply sends the sender’s original ether plus his/her portion of the ethers from those who were late or did not show up.
-
-	SendAllEthere which is called by the curator to close out the game and pay everyone back.
-
-It’s not well thought out, but it seems like it might work. Let me know what you think. I think it would be fun to try to develop this together as a group. I’ll wait until I hear from you and then we can make a GitHub repository.
-
-  allows for the start time and date of the meeting. It takes four additional parameters: (1) 'amount' the deposit amount (default 1) expected to play, (2) 'gracePeriod' (default five mins) the amount of time after the start of the meeting before the random digit is drawn; (3) 'confirmPeriod' (default five mins) the amount of time after the dice is rolled before the 'round' closes; and (4) 'tries' (default 1) the number of tries a user has to call the confirm function before failure.
-
-, gracePeriod, confirmPeriod, tries
+  This function may be called any time after *startTime* + (2 * *gracePeriod*) to return a user's deposit if they sucessfully proved they were present. This is in case the coordinator never calls **closeAttendance** for some reason.
