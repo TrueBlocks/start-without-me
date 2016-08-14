@@ -15,6 +15,8 @@ A simple Ethereum dapp that helps people keep their commitments to attending a m
 
   7.	The cost of refreshments for the meeting is split among those present as it would normally be with those present possibly benefiting from those who fail to show up.
 
+You may view [the pseduo code for the project here](https://github.com/Great-Hill-Corporation/Start-Without-Me/blob/master/Pseudo%20Code.md).
+
 ##Why the Idea is Interesting:
 
   1.	An important aspect of this idea is to incorporate ‘being present’ as part of the operation of a smart contract. Participants' precence or absence is 'real-world' data. In that sense, the contract is using an oracle. The contract tries to make the point that all oracles need not be some sort of software code. 'Real-world' data can come from 'real-world' people acting together.
