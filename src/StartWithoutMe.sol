@@ -14,8 +14,8 @@ contract Mortal {
 }
 
 contract StartWithoutMe is Mortal {
-    enum States { stWaitingForN, stPlaying, stClosed };
-    uint8 status;
+    enum State { stWaitingForN, stPlaying, stClosed }
+    State status;
     uint  startTime;
     string place;
     uint deposit;
@@ -48,7 +48,7 @@ contract StartWithoutMe is Mortal {
         _
     }
 
-    modifier isStatus(check) {
+    modifier isStatus(State check) {
         if (status != check)
             throw;
         _
@@ -70,11 +70,11 @@ contract StartWithoutMe is Mortal {
         maxTries = _maxTries;
         nChar = uint8(-1);
         nPresent = 0;
-        status = stWaitingForN;
+        status = State.stWaitingForN;
     }
 
     // Users make the promise to come to meeting by makeing a deposit
-    function i_promise_to_be_on_time() noDeposit() isStatus(stWaitingForN) {
+    function i_promise_to_be_on_time() noDeposit() isStatus(State.stWaitingForN) {
 
         // wrong deposit amount?
         if (msg.value != deposit)
@@ -86,7 +86,7 @@ contract StartWithoutMe is Mortal {
     }
 
     // Users confirm they are present
-    function i_am_here(string ch) hasDeposit() noAmount() isStatus(stPlaying) {
+    function i_am_here(string ch) hasDeposit() noAmount() isStatus(State.stPlaying) {
 
         nTries[msg.sender] = nTries[msg.sender]+1;
         if (nTries[msg.sender] > maxTries)
@@ -115,13 +115,13 @@ contract StartWithoutMe is Mortal {
     }
 
     // Meeting coordinator closes the game which releases the deposits and distributes the unclaimed deposits
-    function closeAttendence() isStatus(stPlaying) noAmount() isOwner() {
-        status = stClosed;
+    function closeAttendence() isStatus(State.stPlaying) noAmount() isOwner() {
+        status = State.stClosed;
         portion = totalDeposits / nPresent;
     }
 
     // Each person present must call the retrieve function to the their portion.
-    function retrieveMyReward() isStatus(stClosed) noAmount() isPresent() {
+    function retrieveMyReward() isStatus(State.stClosed) noAmount() isPresent() {
         // Has the caller gotten their excess yet? We use present to notate
         // whether or not the user was there, and also whether or not they've
         // been paid out, thus the isPresent modifier above.
@@ -132,7 +132,7 @@ contract StartWithoutMe is Mortal {
 
     // After two weeks, the owner may collect the remain balances of anyone
     // who has not retreived thier share
-    function finalClose() isStatus(stClosed) noAmount() isOwner() {
+    function finalClose() isStatus(State.stClosed) noAmount() isOwner() {
         // simply send the balance of the contract to the owner who may choose to
         // reimburse any remaining 'present' account (or not).
         kill(msg.sender);
@@ -157,15 +157,15 @@ contract StartWithoutMe is Mortal {
             throw;
 
         nChar = _n;
-        status = stPlaying;
+        status = State.stPlaying;
     }
 
-    function private compareCharAt(address addr, string ch, uint8 at) returns (bool) {
+    function compareCharAt(address addr, string ch, uint8 at) private returns (bool) {
         bytes memory a = toBytes(addr);
         return (a[at] == bytes(ch)[0]);
     }
 
-    function private toBytes(address x) returns (bytes b) {
+    function toBytes(address x) private returns (bytes b) {
         b = new bytes(20);
         for (uint i = 0; i < 20; i++)
         b[i] = byte(uint8(uint(x) / (2**(8*(19 - i)))));
